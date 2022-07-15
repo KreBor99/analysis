@@ -1,0 +1,29 @@
+{
+    "bullseye_experiment": {
+        "experiment_name": "bullseye_experiment",
+        "ball_radius": 15,
+        "border_width": 15,
+        "points": [
+            [
+                200,
+                200
+            ],
+            [
+                1720,
+                200
+            ],
+            [
+                1720,
+                880
+            ],
+            [
+                200,
+                880
+            ],
+            [
+                960.0,
+                540.0
+            ]
+        ]
+    }
+}

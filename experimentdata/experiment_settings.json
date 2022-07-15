@@ -1,0 +1,34 @@
+{
+    "recorder": "OpenFace",
+    "csv_filename": "test",
+    "feature_extraction_path": "/media/kre8or/shared/OpenFace/opencv-4.1.0/build/ZMQOpenFace/build/bin/FeatureExtraction",
+    "frame_rate": 30,
+    "window_width": 1920,
+    "window_height": 1080,
+    "lag_compensation": 3,
+    "camera_devices": [
+        {
+            "id": 6,
+            "res": "640x480",
+            "fps": 30
+        }
+    ],
+    "fixed_points": [
+        [
+            200,
+            200
+        ],
+        [
+            1720,
+            200
+        ],
+        [
+            1720,
+            880
+        ],
+        [
+            200,
+            880
+        ]
+    ]
+}
