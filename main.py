@@ -2,6 +2,7 @@ import pandas as pd
 import math
 import os
 from tabulate import tabulate
+import matplotlib.pyplot as plt
 from scipy.constants import degree
 
 import outlierRemoval
@@ -33,6 +34,19 @@ global allstats
 allstats = []
 global expcount
 expcount = 0
+global experimentdict
+experimentdict = {1.3: "30", 1.6: "60", 1.9: "90", 1.12: "120",
+                  1.15: "150", -2.4: "-40", -2.2: "-20", 2.2: "20",
+                  2.4: "40", 3: "Glasses Worn", 4.1: "Camera Left of Monitor", 4.2: "Camera Right of "
+                                                                                    "Monitor",
+                  4.3: "Camera on top of Monitor", 5.6: "Gaze moving quickly", 5.8: "Gaze moving medium speed",
+                  5.12: "Gaze moving slowly", 6.1: "-40", 6.2: "-20",
+                  6.3: "20", 6.4: "40", 7.1: "Red Lighting",
+                  7.2: "Green Lighting", 7.3: "Blue Lighting", 8: "IR Projector"}
+global graphingdatax
+graphingdatax = []
+global graphingdatay
+graphingdatay = []
 
 
 def generategroundtruths():  # generates truths, which is an array of ground truth pairs to be evaluated against
@@ -535,7 +549,7 @@ def calculateerror(currentfile):
     abscsverror = []
     relcsverror = []
     currenterror = []
-    print(currentfile)
+    # print(currentfile)
     currentdata = outlierRemoval.removeOutlier(currentfile)
     if type(currentdata) == None.__class__:
         return -1
@@ -572,6 +586,8 @@ def calculateerror(currentfile):
             relyerror = (abs(releventtruths[0][1] - row['x_2'])) / releventtruths[0][1]
             absxerror = (abs(releventtruths[0][0] - row['x_1']))
             absyerror = (abs(releventtruths[0][1] - row['x_2']))
+            graphingdatax.append(row['x_1'])
+            graphingdatay.append(row['x_2'])
             abscsverror.append([absxerror, absyerror])
             relcsverror.append([relxerror, relyerror])
         if row['group'] == 1:
@@ -581,6 +597,8 @@ def calculateerror(currentfile):
             relyerror = (abs(releventtruths[1][1] - row['x_2'])) / releventtruths[1][1]
             absxerror = (abs(releventtruths[1][0] - row['x_1']))
             absyerror = (abs(releventtruths[1][1] - row['x_2']))
+            graphingdatax.append(row['x_1'])
+            graphingdatay.append(row['x_2'])
             abscsverror.append([absxerror, absyerror])
             relcsverror.append([relxerror, relyerror])
         if row['group'] == 2:
@@ -590,6 +608,8 @@ def calculateerror(currentfile):
             relyerror = (abs(releventtruths[2][1] - row['x_2'])) / releventtruths[2][1]
             absxerror = (abs(releventtruths[2][0] - row['x_1']))
             absyerror = (abs(releventtruths[2][1] - row['x_2']))
+            graphingdatax.append(row['x_1'])
+            graphingdatay.append(row['x_2'])
             abscsverror.append([absxerror, absyerror])
             relcsverror.append([relxerror, relyerror])
         if row['group'] == 3:
@@ -599,6 +619,8 @@ def calculateerror(currentfile):
             relyerror = (abs(releventtruths[3][1] - row['x_2'])) / releventtruths[3][1]
             absxerror = (abs(releventtruths[3][0] - row['x_1']))
             absyerror = (abs(releventtruths[3][1] - row['x_2']))
+            graphingdatax.append(row['x_1'])
+            graphingdatay.append(row['x_2'])
             abscsverror.append([absxerror, absyerror])
             relcsverror.append([relxerror, relyerror])
         if row['group'] == 4:
@@ -608,10 +630,16 @@ def calculateerror(currentfile):
             relyerror = (abs(releventtruths[4][1] - row['x_2'])) / releventtruths[4][1]
             absxerror = (abs(releventtruths[4][0] - row['x_1']))
             absyerror = (abs(releventtruths[4][1] - row['x_2']))
+            # graphingdata[0].append(row['x_1'])
+            # graphingdata[1].append(row['x_2'])
             abscsverror.append([absxerror, absyerror])
             relcsverror.append([relxerror, relyerror])
+        # graphdata()
+        # graphingdatax = []
+        # graphingdatay = []
         # print(abscsverror)
         # print(relcsverror)
+
     runningxavg = 0
     runningyavg = 0
     for item in abscsverror:
@@ -642,25 +670,125 @@ def calculateerror(currentfile):
     return
 
 
+def graphdata():
+    xreleventruths = []
+    yrelevenenttruths = []
+    for item in releventtruths:
+        xreleventruths.append(item[0])
+        yrelevenenttruths.append(item[1])
+    plt.plot(graphingdatax, xreleventruths)
+    plt.xlabel("Data points")
+    plt.ylabel("X gaze")
+    # plt.title(str(experimentdict[experimentnumber]))
+    plt.show()
+    plt.plot(graphingdatay, yrelevenenttruths)
+    plt.xlabel("Data points")
+    plt.plot("Y gaze")
+    # plt.title(str(experimentdict[experimentnumber]))
+    plt.show()
+    return
+
+
 def generategraphics():
     head = ["Experiment", "Relative x error", "Relative y error", "Absolute x error", "Absolute y error",
             "Standard deviation of data", "Standard Deviation of absolute Error"]
     print(tabulate(allstats, headers=head, tablefmt="grid"))
+
     return
+
+
+def generatefigures():
+    distanceplt, headposeplt = plt.subplots()  # , cameraplt, glassesplt, gazespeedplt, lightangleplt, lightcolorplt = plt.subplots()
+    xaxis = []
+    yaxis = []
+    for item in allstats:
+
+        if allstats.index(item) < 5:
+            xaxis.append(float(item[0]))
+            yaxis.append((float(item[3]) + float(item[4])) / 2)
+        if allstats.index(item) == 4:
+            plt.title("Effect of Subject Distance from Camera")
+            plt.xlabel("Distances in CM")
+            plt.ylabel("Average Accuracies")
+            print(xaxis)
+            plt.xticks(xaxis, ["30", "60", "90", "120", "150"])
+            plt.plot(xaxis, yaxis)
+            plt.show()
+            xaxis = []
+            yaxis = []
+
+        if 4 < allstats.index(item) < 9:
+            xaxis.append(float(item[0]))
+            yaxis.append((float(item[3]) + float(item[4])) / 2)
+        if allstats.index(item) == 8:
+            plt.title("Effect of Subject Head Pose")
+            plt.xlabel("Head Angles in Degrees")
+            plt.ylabel("Average Accuracies")
+            plt.xticks(xaxis, [-40, -20, 20, 40])
+            plt.plot(xaxis, yaxis)
+            plt.show()
+            xaxis = []
+            yaxis = []
+        if allstats.index(item) == 9:      #This is For Glasses
+            yaxis.append((float(allstats[1][3])+float(allstats[1][4])/2))
+            plt.title("Effect of Glasses")
+            xaxis= ["No Glasses", "Glasses"]
+            yaxis.append((float(item[3]) + float(item[4])) / 2)
+            plt.ylabel("Average Accuracies")
+            #plt.xticks(xaxis, ["No Glasses", "Glasses"])
+            plt.bar(xaxis, yaxis)
+            plt.show()
+            xaxis = []
+            yaxis = []
+        if 9 < allstats.index(item) < 13:       #This is for different Camera Positions
+            xaxis.append(item[0])
+            yaxis.append((float(item[3]) + float(item[4])) / 2)
+        if allstats.index(item) == 12:
+            plt.title("Effect of Camera Position Relative to the Monitor")
+            plt.ylabel("Average Accuracies")
+            #plt.xticks(xaxis, ["Left", "Right", "Top"])
+            plt.bar(xaxis, yaxis)
+            plt.show()
+            xaxis = []
+            yaxis = []
+        if 12 < allstats.index(item) < 17:      #This is For lighting posititon
+            xaxis.append(float(item[0]))
+            yaxis.append((float(item[3]) + float(item[4])) / 2)
+        if allstats.index(item) == 16:
+            plt.title("Effect of Lighting Positions Relative to the Subject")
+            plt.xlabel("Light Position in Degrees")
+            plt.ylabel("Average Accuracies")
+            plt.xticks(xaxis, [-40, -20, 20, 40])
+            plt.plot(xaxis, yaxis)
+            plt.show()
+            xaxis = []
+            yaxis = []
+        if 16 < allstats.index(item) < 21: #This is for Type of Lighting
+            xaxis.append(item[0])
+            yaxis.append((float(item[3]) + float(item[4])) / 2)
+        if allstats.index(item) == 20:
+            plt.title("Effect of Various Types of Light")
+            plt.ylabel("Average Accuracies")
+            #plt.xticks(xaxis, ["Left", "Right", "Top"])
+            plt.bar(xaxis, yaxis)
+            plt.show()
+            xaxis = []
+            yaxis = []
 
 
 # experimentnumber = int(
 #    input("Please select which experiment you want to perform analysis on with its number\n1.Distance "
 #          "\n2.Head Rotation\n3.Sunglasses/glasses\n4.Camera Position\n5.MovingDot\n6.Focus "
 #          "Lighting\n7.RGB Lighting\n8.IR Projector\n9.Lighting Levels\n"))
-experimentnumberlist = [1.3, 1.6, 1.9, 1.12, 1.15, -2.4, -2.2, 2.2, 2.4, 3, 4.1, 4.2, 4.3, 5.6, 5.8, 5.12, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2, 7.3, 8]
+experimentnumberlist = [1.3, 1.6, 1.9, 1.12, 1.15, -2.4, -2.2, 2.2, 2.4, 3, 4.1, 4.2, 4.3, 6.1, 6.2, 6.3, 6.4, 7.1, 7.2,
+                        7.3, 8]  # add back 5.6, 5.8, 5.12 after Yan update outlier removal
 generategroundtruths()
 # while experimentnumber != 0:
 for item in experimentnumberlist:
     temparray = []
     # findfiles(experimentnumber)
     findfiles2(item)
-    temparray.append(item)
+    temparray.append(experimentdict[item])
     #    print("The average relative x gaze error for this experiment is " + str(
     #        '{:.3g}'.format(math.fabs(statistics.mean(relx_experimenterror) * 100))) + "%")
     temparray.append(str('{:.3g}'.format(math.fabs(statistics.mean(relx_experimenterror) * 100))) + "%")
@@ -669,10 +797,10 @@ for item in experimentnumberlist:
     temparray.append(str('{:.3g}'.format(math.fabs(statistics.mean(rely_experimenterror) * 100))) + "%")
     #    print("The average absolute x gaze error for this experiment is " + str(
     #        '{:.3g}'.format(math.degrees(statistics.mean(absx_experimenterror)))) + " degrees")
-    temparray.append(str('{:.3g}'.format(math.degrees(statistics.mean(absx_experimenterror)))) + " degrees")
+    temparray.append(str('{:.3g}'.format(math.degrees(statistics.mean(absx_experimenterror)))))
     #    print("The average absolute y gaze error for this experiment is " + str(
     #        '{:.3g}'.format(math.degrees(statistics.mean(absy_experimenterror)))) + " degrees")
-    temparray.append(str('{:.3g}'.format(math.degrees(statistics.mean(absy_experimenterror)))) + " degrees")
+    temparray.append(str('{:.3g}'.format(math.degrees(statistics.mean(absy_experimenterror)))))
     allstats.append(temparray)
     # experimentcounter = 0
     x_experimenterror = []
@@ -684,4 +812,5 @@ for item in experimentnumberlist:
     #          "Lighting\n7.RGB Lighting\n8.IR Projector\n9.Lighting Levels\n"))
     # experimentnumber = int(input("Please make another selection, or 0 to exit\n"))
 generategraphics()
+generatefigures()
 print("Program has ended")
