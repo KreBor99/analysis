@@ -65,8 +65,8 @@ def removeOutlier(file):
     else:
         csv_filename = file
         json_filename = file.rstrip("_device_0.csv") + ".json"
-    #print(csv_filename)
-    #print(json_filename)
+    # print(csv_filename)
+    # print(json_filename)
     pixelx, pixely, timestp_gt, group = json_to_arr(json_filename)  # timestp_gt is the timestamp from the json file
 
     # print("number of frames read from json is ", len(pixelx))
@@ -114,10 +114,10 @@ def removeOutlier(file):
                 if row['confidence'] == '0':
                     invalid_frames = invalid_frames + 1
 
-    #if invalid_frames > 0:
-        #print("There are ", invalid_frames, " invalid frames in this dataset, please check !")
+    # if invalid_frames > 0:
+    # print("There are ", invalid_frames, " invalid frames in this dataset, please check !")
     if len(anglex) != len(group):
-        #print("Skipping " + file)
+        # print("Skipping " + file)
         return
     for i in range(0, group[-1] + 1):
         group_anglex = []
@@ -154,7 +154,7 @@ def removeOutlier(file):
             group.pop(outliers[j] + group_start - j)
             pixelx.pop(outliers[j] + group_start - j)
             pixely.pop(outliers[j] + group_start - j)
-    #print("After outlier removal, ", len(anglex), " timeframes of data are left.")
+    # print("After outlier removal, ", len(anglex), " timeframes of data are left.")
     # end of outlier removal
 
     # smooth the data before training
@@ -173,6 +173,113 @@ def removeOutlier(file):
                        'x_2': angley,  # x2
                        'tmsmp': timestp_m,
                        'group': group
+                       })
+
+    return df
+
+
+def movement_json_to_arr(json_filename):
+    pixelx = []
+    pixely = []
+    timestp = []
+    os.chdir("/home/kre8or/PycharmProjects/analysis/experimentdata")
+    with open(json_filename) as f:
+        json_dict = json.load(f)
+    # print(json_dict['perimeter_experiment']['points'][0])
+    for point in json_dict['points']:  # loop through list
+        pixelx.append(point[0])
+        pixely.append(point[1])
+        timestp.append(
+            point[2])  # this is the timestamp of the ground truth points (will be used for matching the csv frames)
+
+    return pixelx, pixely, timestp
+
+
+def movement_outlier(file):
+    if file == "":
+        return
+    elif str(file).__contains__("device_1"):
+        csv_filename = file
+        json_filename = re.sub("_device_1.csv", '', file) + ".json"
+    elif str(file).__contains__("device_2"):
+        csv_filename = file
+        json_filename = re.sub("_device_2.csv", '', file) + ".json"
+    elif str(file).__contains__("subject_11") or str(file).__contains__("subject_10"):
+        csv_filename = file
+        json_filename = re.sub("_device_0.csv", '', file) + ".json"
+    else:
+        csv_filename = file
+        json_filename = file.rstrip("_device_0.csv") + ".json"
+
+    pixelx, pixely, timestp_gt = movement_json_to_arr(json_filename)  # timestp_gt is the timestamp from the json file
+
+    # print("number of frames read from json is ", len(pixelx))
+
+    # 5 inputs, angle_x/y, head position x/y/z
+    # 11, 12 | 294 - 295 (id in the csv file)
+    anglex = []
+    angley = []
+    # headpox = []
+    # headpoy = []
+    # headpoz = []
+    # headrox = []
+    # headroy = []
+    # headroz = []
+    timestp_m = []  # timestamp from the csv file
+    invalid_frames = 0
+    flag = 0
+
+    # read the csv into dictionary and then extract the required data into arrays
+    with open(csv_filename, 'r') as csv_file:
+        reader = csv.DictReader(csv_file)
+        for row in reader:
+            if flag == 0:
+                current_timestamp = float(row['timestamp'])
+                delta = abs(current_timestamp - timestp_gt[0])
+                # print("gotten to the point of measuring the delta")
+                if delta < 0.02:
+                    flag = 1
+                    if row['gaze_angle_x'] is None:
+                        break
+                    anglex.append(
+                        float(row['gaze_angle_x']))  # if need other variables, simply use the name of the column
+                    angley.append(float(row['gaze_angle_y']))
+                    timestp_m.append(float(row['timestamp']))
+                    if row['confidence'] == '0':
+                        invalid_frames = invalid_frames + 1
+            elif flag == 1 and len(anglex) < len(pixelx):
+                if row['gaze_angle_x'] is None:
+                    break
+                anglex.append(float(row['gaze_angle_x']))
+                angley.append(float(row['gaze_angle_y']))
+                # headpox.append(float(row['pose_Tx']))
+                # headpoy.append(float(row['pose_Ty']))
+                # headpoz.append(float(row['pose_Tz']))
+                # headrox.append(float(row['pose_Rx']))
+                # headroy.append(float(row['pose_Ry']))
+                # headroz.append(float(row['pose_Rz']))
+                timestp_m.append(float(row['timestamp']))
+                if row['confidence'] == '0':
+                    invalid_frames = invalid_frames + 1
+
+    # if invalid_frames > 0:
+    # print("There are ", invalid_frames, " invalid frames in this dataset, please check !")
+
+    # smooth the data before training
+    window = 9
+    anglex = movAvg(anglex, window)
+    angley = movAvg(angley, window)
+    # headpox = movAvg(headpox, window)
+    # headpoy = movAvg(headpoy, window)
+    # headpoz = movAvg(headpoz, window)
+    # headrox = movAvg(headrox, window)
+    # headroy = movAvg(headroy, window)
+    # headroz = movAvg(headroz, window)
+    timestp_m = movAvg(timestp_m, window)  # added to smooth time stamp data
+
+    df = pd.DataFrame({'x_1': anglex,  # x1
+                       'x_2': angley,  # x2
+                       'tmsmp': timestp_m,
                        })
 
     return df
