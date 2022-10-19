@@ -54,7 +54,7 @@ def generategroundtruths():  # generates truths, which is an array of ground tru
     distances = [30, 60, 90, 120, 150]
     original = [[5.6, 24.3], [47.7, 24.3], [47.7, 5.5], [5.6, 5.5],
                 [26.65, 13]]  # locations of A-E in cm from bottom left of monitor
-    monitor = [53, 30]
+    monitor = [53.3, 26]
     for d in distances:
         eye_location = [monitor[0] / 2, monitor[1] / 2, d]
         temptruths = []
