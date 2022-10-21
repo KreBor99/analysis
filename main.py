@@ -41,8 +41,7 @@ experimentdict = {1.3: "30", 1.6: "60", 1.9: "90", 1.12: "120",
                   4.3: "Top", 5.6: "Gaze moving quickly", 5.8: "Gaze moving medium speed",
                   5.12: "Gaze moving slowly", 6.1: "-40", 6.2: "-20",
                   6.3: "20", 6.4: "40", 7.1: "Red Lighting",
-                  7.2: "Green Lighting", 7.3: "Blue Lighting", 8: "IR Projector", 9.1: "Low Lighting", 9.2: "Medium "
-                                                                                                            "Lighting"}
+                  7.2: "Green Lighting", 7.3: "Blue Lighting", 8: "IR Projector"}
 global graphingdatax
 graphingdatax = []
 global graphingdatay
@@ -208,15 +207,6 @@ def calculateerror(currentfile, experimentnumber):
     relyavg = runningyavg / relcsverror.__len__()
     relx_experimenterror.append(relxavg)
     rely_experimenterror.append(relyavg)
-    runningxavg = 0
-    runningyavg = 0
-    for item in abscsverror:
-        runningxavg = runningxavg + item[0]
-        runningyavg = runningyavg + item[1]
-    absxavg = runningxavg / abscsverror.__len__()
-    absyavg = runningyavg / abscsverror.__len__()
-    absx_experimenterror.append(absxavg)
-    absy_experimenterror.append(absyavg)
     return
 
 
@@ -224,12 +214,9 @@ def mov_calculateerror(currentfile, experimentnumber):
     releventtruths = []
     abscsverror = []
     relcsverror = []
-    print(currentfile)
 
     currentdata = outlierRemoval.movement_outlier(currentfile)
     # some files have less rows than ground truth
-
-    print(str(len(currentdata)))
 
     if type(currentdata) == None.__class__:
         return -1
@@ -274,15 +261,6 @@ def mov_calculateerror(currentfile, experimentnumber):
     relyavg = runningyavg / relcsverror.__len__()
     relx_experimenterror.append(relxavg)
     rely_experimenterror.append(relyavg)
-    runningxavg = 0
-    runningyavg = 0
-    for item in abscsverror:
-        runningxavg = runningxavg + item[0]
-        runningyavg = runningyavg + item[1]
-    absxavg = runningxavg / abscsverror.__len__()
-    absyavg = runningyavg / abscsverror.__len__()
-    absx_experimenterror.append(absxavg)
-    absy_experimenterror.append(absyavg)
     return
 
 
@@ -397,7 +375,7 @@ def findfiles2(experimentnumber):
         experimentnumber = 4.3
         experimentcounter = 0
         for filename in os.scandir("/home/kre8or/PycharmProjects/analysis/experimentdata"):
-            if str(filename).__contains__("camera-top") and str(filename).__contains__(".csv"):
+            if str(filename).__contains__("camera-high") and str(filename).__contains__(".csv"):
                 experimentcounter += 1
                 if calculateerror(filename.name, experimentnumber) == -1:
                     experimentcounter -= 1
@@ -515,6 +493,7 @@ def findfiles2(experimentnumber):
         experimentcounter = 0
         for filename in os.scandir("/home/kre8or/PycharmProjects/analysis/experimentdata"):
             if str(filename).__contains__("medium-lighting") and str(filename).__contains__(".csv"):
+                print(filename)
                 experimentcounter += 1
                 if calculateerror(filename.name, experimentnumber) == -1:
                     experimentcounter -= 1
@@ -541,7 +520,7 @@ def generatefigures():
         if allstats.index(item) == 4:
             plt.title("Effect of Subject Distance from Camera")
             plt.xlabel("Distances in CM")
-            plt.ylabel("Average Accuracy in Degrees")
+            plt.ylabel("Average Error in Degrees")
             print(xaxis)
             plt.xticks(xaxis, ["30", "60", "90", "120", "150"])
             plt.plot(xaxis, yaxis, marker='D')
@@ -556,7 +535,7 @@ def generatefigures():
         if allstats.index(item) == 8:
             plt.title("Effect of Subject Head Pose")
             plt.xlabel("Head Angles in Degrees")
-            plt.ylabel("Average Accuracy in Degrees")
+            plt.ylabel("Average Error in Degrees")
             plt.xticks(xaxis, [-40, -20, 20, 40])
             plt.plot(xaxis, yaxis, marker='d')
             plt.grid(True, linewidth=0.5, color='#a9a9a9', linestyle='-')
@@ -568,7 +547,7 @@ def generatefigures():
             plt.title("Effect of Glasses")
             xaxis = ["No Glasses", "Glasses"]
             yaxis.append((float(item[3]) + float(item[4])) / 2)
-            plt.ylabel("Average Accuracy in Degrees")
+            plt.ylabel("Average Error in Degrees")
             # plt.xticks(xaxis, ["No Glasses", "Glasses"])
             plt.bar(xaxis, yaxis)
             plt.grid(True, linewidth=0.5, color='#a9a9a9', linestyle='-', axis='y')
@@ -582,7 +561,7 @@ def generatefigures():
             yaxis.append((float(allstats[1][3]) + float(allstats[1][4]) / 2))
             xaxis.append("Bottom")
             plt.title("Effect of Camera Position Relative to the Monitor")
-            plt.ylabel("Average Accuracy in Degrees")
+            plt.ylabel("Average Error in Degrees")
             plt.xlabel("Position relative to Monitor")
             #plt.xticks(rotation=30)
             plt.grid(True, linewidth=0.5, color='#a9a9a9', linestyle='-', axis='y')
@@ -591,39 +570,27 @@ def generatefigures():
             plt.show()
             xaxis = []
             yaxis = []
-        # if 12 < allstats.index(item) < 17:  # This is For lighting posititon
-        # xaxis.append(float(item[0]))
-        # yaxis.append((float(item[3]) + float(item[4])) / 2)
-        # if allstats.index(item) == 16:
-        # plt.title("Effect of Lighting Positions Relative to the Subject")
-        # plt.xlabel("Light Position in Degrees")
-        # plt.ylabel("Average Accuracy in Degrees")
-        # plt.xticks(xaxis, [-40, -20, 20, 40])
-        # plt.plot(xaxis, yaxis, marker='d')
-        # plt.grid(True, linewidth=0.5, color='#a9a9a9', linestyle='-', axis = 'x')
-        # plt.show()
-        # xaxis = []
-        # yaxis = []
+        if 12 < allstats.index(item) < 17:  # This is For lighting posititon
+            xaxis.append(float(item[0]))
+            yaxis.append((float(item[3]) + float(item[4])) / 2)
+        if allstats.index(item) == 16:
+            plt.title("Effect of Lighting Positions Relative to the Subject")
+            plt.xlabel("Light Position in Degrees")
+            plt.ylabel("Average Accuracy in Degrees")
+            plt.xticks(xaxis, [-40, -20, 20, 40])
+            plt.plot(xaxis, yaxis, marker='d')
+            plt.grid(True, linewidth=0.5, color='#a9a9a9', linestyle='-', axis = 'x')
+            plt.show()
+            xaxis = []
+            yaxis = []
         if 16 < allstats.index(item) < 21:  # This is for Type of Lighting
             xaxis.append(item[0])
             yaxis.append((float(item[3]) + float(item[4])) / 2)
         if allstats.index(item) == 20:
             plt.title("Effect of Various Types of Light")
-            plt.ylabel("Average Accuracy in Degrees")
+            plt.ylabel("Average Error in Degrees")
             # plt.xticks(xaxis, ["Left", "Right", "Top"])
             plt.bar(["red", "Green", "Blue", "IR"], yaxis)
-            plt.grid(True, linewidth=0.5, color='#a9a9a9', linestyle='-', axis='y')
-            plt.show()
-            xaxis = []
-            yaxis = []
-        if 20 < allstats.index(item) < 23:
-            xaxis.append(item[0])
-            yaxis.append((float(item[3]) + float(item[4])) / 2)
-        if allstats.index(item) == 22:
-            plt.title("Effect of Lighting Level")
-            plt.ylabel("Average Accuracy in Degrees")
-            plt.xlabel("Light Level in Lux")
-            plt.bar(["10", "400"], yaxis)
             plt.grid(True, linewidth=0.5, color='#a9a9a9', linestyle='-', axis='y')
             plt.show()
             xaxis = []
@@ -632,12 +599,16 @@ def generatefigures():
 
 experimentnumberlist = [1.3, 1.6, 1.9, 1.12, 1.15, -2.4, -2.2, 2.2, 2.4, 3, 4.1, 4.2, 4.3, 5.6, 5.8, 5.12, 6.1, 6.2,
                         6.3, 6.4, 7.1, 7.2,
-                        7.3, 8, 9.1, 9.2]  # add back 5.6, 5.8, 5.12 after Yan update outlier removal
+                        7.3, 8]  # add back 5.6, 5.8, 5.12 after Yan update outlier removal
 generategroundtruths()
 generatemovinggroundtruths()
 
 for item in experimentnumberlist:
     temparray = []
+    relx_experimenterror = []
+    rely_experimenterror = []
+    absx_experimenterror = []
+    absy_experimenterror = []
     findfiles2(item)
     temparray.append(experimentdict[item])
     #    print("The average relative x gaze error for this experiment is " + str(
